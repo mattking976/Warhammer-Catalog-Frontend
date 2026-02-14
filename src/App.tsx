@@ -1,26 +1,46 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import axios from 'axios';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import ListComponent from './components/listcomponent';
+
+class App extends React.Component {
+  state = {
+    data: null,
+  };
+
+  componentDidMount() {
+    axios.get('http://127.0.0.1:8000/')
+      .then(response => {
+        this.setState({ data: response.data });
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }
+
+  render() {
+    const { data } = this.state;
+    const parsedData = data ? JSON.parse(data) : null;
+
+    return (
+      <div>
+        <h1>Data from API:</h1>
+        {parsedData ? (
+          // this does not function
+          <ListComponent
+            unitName={parsedData.unitName}
+            unitType={parsedData.unitType}
+            codexPage={parsedData.codexPage}
+            pointsCost={parsedData.pointsCost}
+            isBuilt={parsedData.isBuilt}
+            isPainted={parsedData.isPainted}
+          />
+        ) : (
+          <p>Loading...</p>
+        )}
+      </div>
+    );
+  }
 }
 
 export default App;
