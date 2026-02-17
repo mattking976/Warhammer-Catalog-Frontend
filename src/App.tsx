@@ -2,39 +2,40 @@ import React from 'react';
 import axios from 'axios';
 
 import ListComponent from './components/listcomponent';
+import { parseUnits, Unit } from './helpers/unitParsers';
+import { API_ENDPOINTS } from './helpers/endpoints';
+import './CSS/exports';
 
-class App extends React.Component {
-  state = {
-    data: null,
-  };
+type State = {
+  data: Unit[] | null;
+};
+
+class App extends React.Component<{}, State> {
+  state: State = { data: null };
 
   componentDidMount() {
-    axios.get('http://127.0.0.1:8000/')
+    axios.get(API_ENDPOINTS.FORCE_ORG)
       .then(response => {
-        this.setState({ data: response.data });
+        // response.data may already be a parsed object or a JSON string
+        const parsed = parseUnits(response.data);
+        this.setState({ data: parsed });
       })
       .catch(error => {
         console.error('Error fetching data:', error);
+        this.setState({ data: [] });
       });
   }
 
   render() {
     const { data } = this.state;
-    const parsedData = data ? JSON.parse(data) : null;
 
     return (
-      <div>
-        <h1>Data from API:</h1>
-        {parsedData ? (
-          // this does not function
-          <ListComponent
-            unitName={parsedData.unitName}
-            unitType={parsedData.unitType}
-            codexPage={parsedData.codexPage}
-            pointsCost={parsedData.pointsCost}
-            isBuilt={parsedData.isBuilt}
-            isPainted={parsedData.isPainted}
-          />
+      <div className="App">
+        <h1>Blood Angels Forces</h1>
+        {data && data.length > 0 ? (
+          <div>
+            <ListComponent units={data} />
+          </div>
         ) : (
           <p>Loading...</p>
         )}
