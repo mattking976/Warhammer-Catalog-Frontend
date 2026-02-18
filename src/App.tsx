@@ -1,37 +1,37 @@
 import React from 'react';
-import axios from 'axios';
 
 import ListComponent from './components/listcomponent';
-import { parseUnits, Unit } from './helpers/unitParsers';
-import { API_ENDPOINTS } from './helpers/endpoints';
-import './CSS/exports';
+import getForces from './helpers/getForces';
+import { Unit } from './helpers/dataTypes';
+import './CSS/app.css';
 
 type State = {
   data: Unit[] | null;
+  force: string;
 };
 
 class App extends React.Component<{}, State> {
-  state: State = { data: null };
-
+  state: State = { data: null, force: '2/' };
   componentDidMount() {
-    axios.get(API_ENDPOINTS.FORCE_ORG)
-      .then(response => {
-        // response.data may already be a parsed object or a JSON string
-        const parsed = parseUnits(response.data);
-        this.setState({ data: parsed });
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-        this.setState({ data: [] });
-      });
+    getForces(this.state.force)
   }
 
   render() {
     const { data } = this.state;
+    const heading = data && data.length > 0 ? data[0].faction || 'Force Org Data' : 'Force Org Data';
 
     return (
       <div className="App">
-        <h1>Blood Angels Forces</h1>
+        <h1>{heading} Forces</h1>
+
+        <select defaultValue={"2/"} onChange={(e) => {
+          this.setState({ force: e.target.value });
+          getForces(e.target.value).then((data) => this.setState({ data }));
+        }}>
+          <option value="2/">Necrons</option>
+          <option value="6/">Blood Angels</option>
+        </select>
+        
         {data && data.length > 0 ? (
           <div>
             <ListComponent units={data} />

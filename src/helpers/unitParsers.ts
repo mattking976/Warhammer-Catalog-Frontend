@@ -1,33 +1,25 @@
 import { z } from 'zod';
-
-export interface Unit {
-  id: number;
-  unitName: string;
-  unitType: string;
-  codexPage: number;
-  pointsCost: number;
-  isBuilt: boolean;
-  isPainted: boolean;
-}
+import { Unit } from './dataTypes';
 
 const RawUnit = z.object({
   id: z.union([z.number(), z.string()]).transform((v) => Number(v)),
-  unit_name: z.string().optional(),
-  unit_type: z.string().optional(),
-  codex_page: z.union([z.number(), z.string()]).optional().transform((v) => (v === undefined ? 0 : Number(v))),
-  points_cost: z.union([z.number(), z.string()]).optional().transform((v) => (v === undefined ? 0 : Number(v))),
-  is_built: z.union([z.boolean(), z.string(), z.number()]).optional().transform((v) => {
+  unit_name: z.string(),
+  unit_type: z.string(),
+  codex_page: z.union([z.number(), z.string()]).transform((v) => (v === undefined ? 0 : Number(v))),
+  points_cost: z.union([z.number(), z.string()]).transform((v) => (v === undefined ? 0 : Number(v))),
+  is_built: z.union([z.boolean(), z.string(), z.number()]).transform((v) => {
     if (v === undefined) return false;
     if (typeof v === 'boolean') return v;
     if (typeof v === 'number') return v !== 0;
     return v === 'true' || v === '1';
   }),
-  is_painted: z.union([z.boolean(), z.string(), z.number()]).optional().transform((v) => {
+  is_painted: z.union([z.boolean(), z.string(), z.number()]).transform((v) => {
     if (v === undefined) return false;
     if (typeof v === 'boolean') return v;
     if (typeof v === 'number') return v !== 0;
     return v === 'true' || v === '1';
   }),
+  faction: z.string()
 });
 
 const RawUnits = z.array(RawUnit);
@@ -44,6 +36,7 @@ function toUnit(obj: any): Unit | null {
     pointsCost: Number(obj.points_cost ?? obj.pointsCost ?? 0),
     isBuilt: Boolean(obj.is_built ?? obj.isBuilt ?? false),
     isPainted: Boolean(obj.is_painted ?? obj.isPainted ?? false),
+    faction: String(obj.faction ?? obj.Faction ?? 'Unknown Faction'),
   };
 }
 
